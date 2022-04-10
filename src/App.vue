@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <span class="text">ABCDEEFG</span>
     <router-view />
   </div>
 </template>
@@ -19,9 +18,9 @@ export default {};
 
 <style lang="scss">
 @import '@/assets/styles/global.scss';
-.text {
-  font-family: "Days One";
-  color: orange;
-  font-size: px2rem(20);
+#app {
+  width: 100%;
+  height:100%;
+  overflow: hidden;
 }
 </style>
