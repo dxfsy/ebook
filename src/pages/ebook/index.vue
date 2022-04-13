@@ -1,19 +1,49 @@
 <template>
   <div class="ebook">
-      <EbookReader></EbookReader>
+    <EbookTitle />
+    <EbookReader />
+    <EbookMenu />
   </div>
 </template>
 
 <script>
-import EbookReader from '@/components/ebook/EbookReader' 
+import EbookReader from "@/components/ebook/EbookReader";
+import EbookTitle from "@/components/ebook/EbookTitle.vue";
+import EbookMenu from "@/components/ebook/EbookMenu";
+import { getReadTime, saveReadTime } from "@/utils/localStorage";
+import { ebookMixin } from "@/utils/mixin";
 export default {
-    name:'Ebook',
-    components: {
-        EbookReader
-    }
-}
+  name: "Ebook",
+  mixins: [ebookMixin],
+  components: {
+    EbookReader,
+    EbookTitle,
+    EbookMenu,
+  },
+  methods: {
+    startLoopReadTime() {
+      let readTime = getReadTime(this.filename);
+      console.log(readTime);
+      if (readTime===undefined) {
+        saveReadTime(this.filename,0);
+      } else {
+        this.task = setInterval(() => {
+          readTime++;
+          if (readTime % 5 === 0) {
+            saveReadTime(this.filename, readTime);
+          }
+        }, 1000);
+      }
+    },
+  },
+  mounted() {
+    this.startLoopReadTime();
+  },
+  beforeDestroy() {
+    if (this.task) clearInterval(this.task);
+  },
+};
 </script>
 
 <style>
-
 </style>
