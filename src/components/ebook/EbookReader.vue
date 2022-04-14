@@ -12,7 +12,7 @@ import {
   saveFontSize,
   getTheme,
   saveTheme,
-  getLocation
+  getLocation,
 } from "@/utils/localStorage";
 
 import { ebookMixin } from "@/utils/mixin";
@@ -34,12 +34,11 @@ export default {
         this.rendition.next();
       }
     },
-    // 切换菜单状态
-    toggleTitleAndMenu() {
-      this.$store.dispatch(
-        "setMenuVisible",
-        !this.$store.state.ebook.menuVisible
-      );
+    // 初始化手势点击事件
+    initGesture(){
+      this.rendition.on('click',()=> {
+        this.toggleMenu();
+      })
     },
     // 初始化字体类型
     initFontFamily() {
@@ -82,9 +81,9 @@ export default {
         // epubjs高版本实现滑屏
         flow: "paginated",
         manager: "continuous",
+        snap: true,
         width: innerWidth,
         height: innerHeight,
-        snap: true,
       });
 
       //初始化电子书
@@ -95,6 +94,25 @@ export default {
         this.initTheme();
         this.initGlobalStyle();
       });
+                // 实现翻页和展示菜单 低版本实现滑屏
+        // this.rendition.on("touchstart", (event) => {
+        //   this.touchStartX = event.changeTouches[0].clientX;
+        //   this.touchStartTime = event.timeStamp;
+        // });
+        // this.rendition.on("touchend", (event) => {
+        //   const offsetX = event.changeTouches[0].clientX - this.touchStartX;
+        //   const time = event.timeStamp - this.touchStartTime;
+        //   if (time < 500 && offsetX > 40) {
+        //     this.prevPage();
+        //   } else if (time < 500 && offsetX < -40) {
+        //     this.nextPage();
+        //   } else {
+        //     this.toggleTitleAndMenu();
+        //   }
+        //   event.preventDefault();
+        //   event.stopPropagation();
+        // });
+
 
       // 服务端加载字体文件
       this.rendition.hooks.content.register((contents) => {
@@ -114,20 +132,7 @@ export default {
         ]).then(() => {});
       });
     },
-    initGesture() {
-      // 实现显示隐藏菜单栏
-      this.rendition.on("click", (event) => {
-        // 隐藏设置组件
-        if (this.settingVisible >= 0) {
-          this.$store.dispatch("setSettingVisible", -1);
-        }
-        // 隐藏设置字体组件
-        if (this.fontFamilyVisible) {
-          this.$store.dispatch("setFontFamilyVisible", false);
-        }
-        this.toggleTitleAndMenu();
-      });
-    },
+
     // 初始化电子书
     initEpub() {
       // 获取epub文件的url

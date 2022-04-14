@@ -24,6 +24,7 @@
   <EbookSettingFontPopup />
   <EbookSettingTheme />
   <EbookSettingProgress />
+  <EbookSlide />
 </div>
  
   
@@ -34,6 +35,7 @@ import EbookSettingTheme from '@/components/ebook/EbookSettingTheme'
 import EbookSettingFontPopup from '@/components/ebook/EbookSettingFontPopup'
 import EbookSettingFont from '@/components/ebook/EbookSettingFont.vue'
 import EbookSettingProgress from '@/components/ebook/EbookSettingProgress'
+import EbookSlide from '@/components/ebook/EbookSlide'
 import { ebookMixin } from "@/utils/mixin";
 
 export default {
@@ -48,7 +50,8 @@ export default {
     EbookSettingFont,
     EbookSettingFontPopup,
     EbookSettingTheme,
-    EbookSettingProgress
+    EbookSettingProgress,
+    EbookSlide
   }
 };
 </script>

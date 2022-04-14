@@ -70,6 +70,22 @@ export const ebookMixin = {
           if(cb) cb();
         });
       }
+    },
+    // 点击电子书实现显示隐藏menu
+    toggleMenu(){
+      // 隐藏设置组件
+      if (this.settingVisible >= 0) {
+        this.$store.dispatch("setSettingVisible", -1);
+      }
+      // 隐藏设置字体组件
+      if (this.fontFamilyVisible) {
+        this.$store.dispatch("setFontFamilyVisible", false);
+      }
+      // 切换菜单状态
+      this.$store.dispatch(
+        "setMenuVisible",
+        !this.$store.state.ebook.menuVisible
+      );
     }
   }
 }

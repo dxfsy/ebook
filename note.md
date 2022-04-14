@@ -14,6 +14,10 @@
             messages
         })
     使用 :$t('book.xxx');
+## v-show和v-if的区别：
+    1）加载时，v-if性能更好，因为v-if不需要加载不显示的dom，而v-show需要全部加载
+
+    2）切换时，v-show性能更好，因为切换时，v-show只需要修改display属性，而v-if需要加载整个dom所以最终选择哪一条看你是否需要频繁切换，如果频繁切换，选v-show，如果对首屏打开速度比较敏感选v-if
 ## bug1 记录阅读进度永远是倒数第二页
 ## bug2 渲染出来的电子书首页永远不是从封面开始，在首页也不能用手势往回翻页，但是如果是用section重新display渲染电子书，可以回去封面。
 
@@ -21,23 +25,3 @@
 
 
 
-          // 实现翻页和展示菜单 低版本实现滑屏
-      function a() {
-        // this.rendition.on("touchstart", (event) => {
-        //   this.touchStartX = event.changeTouches[0].clientX;
-        //   this.touchStartTime = event.timeStamp;
-        // });
-        // this.rendition.on("touchend", (event) => {
-        //   const offsetX = event.changeTouches[0].clientX - this.touchStartX;
-        //   const time = event.timeStamp - this.touchStartTime;
-        //   if (time < 500 && offsetX > 40) {
-        //     this.prevPage();
-        //   } else if (time < 500 && offsetX < -40) {
-        //     this.nextPage();
-        //   } else {
-        //     this.toggleTitleAndMenu();
-        //   }
-        //   event.preventDefault();
-        //   event.stopPropagation();
-        // });
-      }
