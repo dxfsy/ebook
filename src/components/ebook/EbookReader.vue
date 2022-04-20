@@ -1,6 +1,13 @@
 <template>
   <div class="ebook-reader">
     <div id="read"></div>
+    <div
+      class="ebook-reader-mask"
+      @click="onMaskClick"
+      @touchstart="moveStart"
+      @touchmove="move"
+      @touchend="moveEnd"
+    ></div>
   </div>
 </template>
 
@@ -16,30 +23,82 @@ import {
 } from "@/utils/localStorage";
 
 import { ebookMixin } from "@/utils/mixin";
+import { flatten } from "@/utils/book";
 import Epub from "epubjs";
 global.epub = Epub;
 export default {
   name: "EbookReader",
   mixins: [ebookMixin],
   methods: {
+    move(e) {
+      let offsetY = 0;
+      if (this.firstOffsetY) {
+        offsetY = e.changedTouches[0].clientY - this.firstOffsetY;
+        if(offsetY>0){
+          this.$store.dispatch("setOffsetY", offsetY);
+        }
+      }
+    },
+    moveStart(e) {
+      const touchStartY = e.changedTouches[0].clientY;
+      this.firstOffsetY = touchStartY;
+    },
+    moveEnd(e) {
+      this.firstOffsetY = 0;
+      this.$store.dispatch('setOffsetY',0);
+    },
+    // 电子书点击事件(翻页，显示隐藏菜单栏)
+    onMaskClick(e) {
+      const offsetX = e.offsetX;
+      const width = window.innerWidth;
+      if (offsetX > 0 && offsetX < width * 0.3) {
+        this.prevPage();
+      } else if (offsetX > 0 && offsetX > width * 0.7) {
+        this.nextPage();
+      } else {
+        this.toggleMenu();
+      }
+    },
     // 上一页
     prevPage() {
       if (this.rendition) {
-        this.rendition.prev();
+        this.rendition.prev().then(() => {
+          this.refreshLocation();
+        });
+        this.hideMenuAndTitle();
       }
     },
     // 下一页
     nextPage() {
       if (this.rendition) {
-        this.rendition.next();
+        this.rendition.next().then(() => {
+          this.refreshLocation();
+        });
       }
+      this.hideMenuAndTitle();
     },
     // 初始化手势点击事件
-    initGesture(){
-      this.rendition.on('click',()=> {
-        this.toggleMenu();
-      })
-    },
+    // initGesture(){
+    //   // 实现翻页和展示菜单 低版本实现滑屏
+    //   this.rendition.on("touchstart", (event) => {
+    //     this.touchStartX = event.changedTouches[0].clientX;
+    //     this.touchStartTime = event.timeStamp;
+    //   });
+    //   this.rendition.on("touchend", (event) => {
+    //     const offsetX = event.changedTouches[0].clientX - this.touchStartX;
+    //     const time = event.timeStamp - this.touchStartTime;
+    //     if (time < 500 && offsetX > 40) {
+    //       this.prevPage();
+    //     } else if (time < 500 && offsetX < -40) {
+    //       this.nextPage();
+    //     } else {
+    //       this.toggleMenu();
+    //     }
+    //     // event.preventDefault();
+    //     event.stopPropagation();
+    //   });
+
+    // },
     // 初始化字体类型
     initFontFamily() {
       let font = getFontFamily(this.filename);
@@ -75,13 +134,46 @@ export default {
       });
       this.rendition.themes.select(defaultTheme);
     },
+    // 获取电子书信息
+    praseBook() {
+      // 获取封面信息
+      this.book.loaded.cover.then((cover) => {
+        // 此处获取的cover还不是真正的链接，需要将cover传入createUrl方法中进一步生成可用链接
+        this.book.archive.createUrl(cover).then((url) => {
+          this.$store.dispatch("setCover", url);
+        });
+      });
+      // 获取电子书相关信息（作者名称，书籍标题等等）
+      this.book.loaded.metadata.then((metedata) => {
+        this.$store.dispatch("setMetadata", metedata);
+      });
+      // 获取电子书的章节信息
+      this.book.loaded.navigation.then((nav) => {
+        const navItem = flatten(nav.toc);
+        // 进行目录层级判断
+        function find(item, level = 0) {
+          return !item.parent
+            ? level
+            : find(
+                navItem.filter(
+                  (parentItem) => parentItem.id === item.parent
+                )[0],
+                ++level
+              );
+        }
+        navItem.forEach((item) => {
+          item.level = find(item);
+        });
+        this.$store.dispatch("setNavigation", navItem);
+      });
+    },
     initRendition() {
       //   将epub渲染在页面上
       this.rendition = this.book.renderTo("read", {
         // epubjs高版本实现滑屏
-        flow: "paginated",
-        manager: "continuous",
-        snap: true,
+        // flow: "paginated",
+        // manager: "continuous",
+        // snap: true,
         width: innerWidth,
         height: innerHeight,
       });
@@ -93,26 +185,8 @@ export default {
         this.initFontSize();
         this.initTheme();
         this.initGlobalStyle();
+        this.praseBook();
       });
-                // 实现翻页和展示菜单 低版本实现滑屏
-        // this.rendition.on("touchstart", (event) => {
-        //   this.touchStartX = event.changeTouches[0].clientX;
-        //   this.touchStartTime = event.timeStamp;
-        // });
-        // this.rendition.on("touchend", (event) => {
-        //   const offsetX = event.changeTouches[0].clientX - this.touchStartX;
-        //   const time = event.timeStamp - this.touchStartTime;
-        //   if (time < 500 && offsetX > 40) {
-        //     this.prevPage();
-        //   } else if (time < 500 && offsetX < -40) {
-        //     this.nextPage();
-        //   } else {
-        //     this.toggleTitleAndMenu();
-        //   }
-        //   event.preventDefault();
-        //   event.stopPropagation();
-        // });
-
 
       // 服务端加载字体文件
       this.rendition.hooks.content.register((contents) => {
@@ -132,7 +206,10 @@ export default {
         ]).then(() => {});
       });
     },
-
+    // 隐藏菜单
+    hideMenuAndTitle() {
+      this.$store.dispatch("setMenuVisible", false);
+    },
     // 初始化电子书
     initEpub() {
       // 获取epub文件的url
@@ -142,7 +219,7 @@ export default {
       this.$store.dispatch("setCurrentBook", this.book);
       console.log(this.book);
       this.initRendition();
-      this.initGesture();
+      // this.initGesture();
 
       // 对电子书进行分页。
       this.book.ready
@@ -168,5 +245,21 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss" scoped>
+@import "@/assets/styles/global";
+.ebook-reader {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  .ebook-reader-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 150;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+  }
+}
 </style>

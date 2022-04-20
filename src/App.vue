@@ -23,4 +23,7 @@ export default {};
   height:100%;
   overflow: hidden;
 }
+html {
+  background-color: gray;
+}
 </style>

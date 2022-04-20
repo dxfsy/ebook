@@ -27,3 +27,13 @@ $ratio: 375 / 10;
     overflow: hidden;
     white-space: nowrap;
 }
+
+@mixin mutilEllipsis($line) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: $line;
+    white-space: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: keep-all;
+}

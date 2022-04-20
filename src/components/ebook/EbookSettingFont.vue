@@ -79,7 +79,7 @@ export default {
   left: 0;
   display: flex;
   flex-direction: column;
-  z-index: 101;
+  z-index: 151;
   width: 100%;
   height: px2rem(90);
   background: white;

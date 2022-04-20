@@ -37,20 +37,23 @@
 
 <script>
 import { ebookMixin } from "@/utils/mixin";
-import { getReadTime } from '@/utils/localStorage';
+
 export default {
   name: "EbookSettingProgress",
   mixins: [ebookMixin],
   computed: {
     getSectionName(){
-      if(this.section) {
-        const sectionInfo = this.currentBook.section(this.section);
-        if(sectionInfo&&sectionInfo.href) {
-          return this.currentBook.navigation.get(sectionInfo.href).label;
-        }
-      }else {
-        return '';
-      }
+      // if(this.section) {
+      //   const sectionInfo = this.currentBook.section(this.section);
+      //   if(sectionInfo&&sectionInfo.href&&this.currentBook&&this.currentBook.navigation) {
+      //     return this.currentBook.navigation.get(sectionInfo.href).label;
+      //   }
+      // }else {
+      //   return '';
+      // }
+     if(this.navigation&&this.navigation[this.section]){
+      return this.section ? this.navigation[this.section].label : '';
+     }
     }
   },
   methods: {
@@ -82,6 +85,7 @@ export default {
       if (this.section > 0 && this.bookAvailable) {
         this.$store.dispatch("setSection", this.section - 1).then(() => {
           this.displaySection(this.section);
+          
         });
       }
     },
@@ -100,12 +104,6 @@ export default {
         this.display(sectionInfo.href)
       }
     },
-    getReadTimeText(){
-      return this.$t('book.haveRead').replace('$1',this.getReadMinute());
-    },
-    getReadMinute(){
-      return getReadTime(this.filename)?Math.ceil(getReadTime(this.filename) / 60):'0';
-    }
   },
   updated() {
     this.updateProgressbg();
@@ -119,7 +117,7 @@ export default {
   position: absolute;
   bottom: px2rem(48);
   left: 0;
-  z-index: 101;
+  z-index: 151;
   width: 100%;
   height: px2rem(90);
   background: white;
