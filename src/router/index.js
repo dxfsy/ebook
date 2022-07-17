@@ -6,7 +6,7 @@ Vue.use(VueRouter)
 const routes = [
   {
     path:'/',
-    redirect:'/ebook',
+    redirect:'/store',
   },
   {
     path:'/ebook',
@@ -15,6 +15,37 @@ const routes = [
       {
         path:':filename',
         component:()=>import('@/components/ebook/EbookReader.vue')
+      }
+    ]
+  },
+  {
+    path:'/store',
+    component: () => import('@/pages/store'),
+    redirect:'/store/home',
+    children: [
+      {
+        path:'shelf',
+        component:()=>import('@/pages/store/StoreShelf')
+      },
+      {
+        path:'category',
+        component:()=>import('@/pages/store/StoreCategory')
+      },
+      {
+        path:'home',
+        component:()=> import ('@/pages/store/StoreHome'),
+      },
+      {
+        path:'list',
+        component: ()=>import('@/pages/store/StoreList'),
+      },
+      {
+        path:'detail',
+        component:()=>import('@/pages/store/StoreDetail'),
+      },
+      {
+        path:'speaking',
+        component:()=>import('@/pages/store/StoreSpeaking'),
       }
     ]
   }

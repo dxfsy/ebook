@@ -25,7 +25,9 @@
     const a = [[1,2,3],[4,5,6,7,8]]
     console.log([].concat.apply([],a)); //[1, 2, 3, 4, 5, 6, 7, 8]
 
+## vue-create-api
+    用于组件间解耦，如引用toast组件需要import引入，注册等操作；用vue-create-api后可以像调用方法一样使用
 
-
-
+## onDownloadProgress中的progressEvent返回的值中没有loaded等的问题
+    是因为使用了mockjs，mockjs中源码中用MockXMLHttpRequest替代了原生的XMLHttpRequest，导致其中的参数也不一致。（mock只是用于模拟，后续接口写好就不需要了，问题不大）
 

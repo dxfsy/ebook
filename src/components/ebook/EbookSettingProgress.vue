@@ -41,21 +41,6 @@ import { ebookMixin } from "@/utils/mixin";
 export default {
   name: "EbookSettingProgress",
   mixins: [ebookMixin],
-  computed: {
-    getSectionName(){
-      // if(this.section) {
-      //   const sectionInfo = this.currentBook.section(this.section);
-      //   if(sectionInfo&&sectionInfo.href&&this.currentBook&&this.currentBook.navigation) {
-      //     return this.currentBook.navigation.get(sectionInfo.href).label;
-      //   }
-      // }else {
-      //   return '';
-      // }
-     if(this.navigation&&this.navigation[this.section]){
-      return this.section ? this.navigation[this.section].label : '';
-     }
-    }
-  },
   methods: {
     // 进度条改变
     onProgressChange(progress) {

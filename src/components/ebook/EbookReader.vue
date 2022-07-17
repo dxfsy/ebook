@@ -7,6 +7,9 @@
       @touchstart="moveStart"
       @touchmove="move"
       @touchend="moveEnd"
+      @mousedown.left="mouseEnter"
+      @mousemove.left="mouseMove"
+      @mouseup.left="mouseEnd"
     ></div>
   </div>
 </template>
@@ -25,19 +28,60 @@ import {
 import { ebookMixin } from "@/utils/mixin";
 import { flatten } from "@/utils/book";
 import Epub from "epubjs";
+import { getLocalForage } from "@/utils/localForage";
 global.epub = Epub;
 export default {
   name: "EbookReader",
   mixins: [ebookMixin],
   methods: {
+    mouseEnter(e) {
+      this.mouseState = 1;
+      // this.startTime = e.timeStamp;
+      const startY = e.clientY;
+      this.firstOffsetY = startY;
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    mouseMove(e) {
+      if (this.mouseState === 1) {
+        this.mouseState = 2;
+      } else if (this.mouseState === 2) {
+        let offsetY = 0;
+        if (this.firstOffsetY) {
+          offsetY = e.clientY - this.firstOffsetY;
+          if (offsetY > 0) {
+            this.$store.dispatch("setOffsetY", offsetY);
+          }
+        }
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    mouseEnd(e) {
+      if (this.mouseState === 2) {
+        this.$store.dispatch("setOffsetY", 0);
+        this.firstOffsetY = 0;
+        this.mouseState = 3;
+      } else {
+        this.mouseState = 4;
+      }
+      // const time = e.timeStamp - this.startTime;
+      // if(time < 200) {
+      //   this.mouseState = 4;
+      // }
+      e.preventDefault();
+      e.stopPropagation();
+    },
     move(e) {
       let offsetY = 0;
       if (this.firstOffsetY) {
         offsetY = e.changedTouches[0].clientY - this.firstOffsetY;
-        if(offsetY>0){
+        if (offsetY > 0) {
           this.$store.dispatch("setOffsetY", offsetY);
         }
       }
+      e.preventDefault();
+      e.stopPropagation();
     },
     moveStart(e) {
       const touchStartY = e.changedTouches[0].clientY;
@@ -45,10 +89,13 @@ export default {
     },
     moveEnd(e) {
       this.firstOffsetY = 0;
-      this.$store.dispatch('setOffsetY',0);
+      this.$store.dispatch("setOffsetY", 0);
     },
     // 电子书点击事件(翻页，显示隐藏菜单栏)
     onMaskClick(e) {
+      if (this.mouseState && (this.mouseState === 2 || this.mouseState === 3)) {
+        return;
+      }
       const offsetX = e.offsetX;
       const width = window.innerWidth;
       if (offsetX > 0 && offsetX < width * 0.3) {
@@ -122,7 +169,7 @@ export default {
     // 初始化主题
     initTheme() {
       let defaultTheme = getTheme(this.filename);
-      console.log(defaultTheme);
+      // console.log(defaultTheme);
       if (!defaultTheme) {
         defaultTheme = this.themeList[0].name;
       }
@@ -211,13 +258,10 @@ export default {
       this.$store.dispatch("setMenuVisible", false);
     },
     // 初始化电子书
-    initEpub() {
-      // 获取epub文件的url
-      let url =
-        `${process.env.VUE_APP_RES_URL}/epub/` + this.filename + ".epub";
+    initEpub(url) {
       this.book = new Epub(url);
       this.$store.dispatch("setCurrentBook", this.book);
-      console.log(this.book);
+      // console.log(this.book);
       this.initRendition();
       // this.initGesture();
 
@@ -230,17 +274,59 @@ export default {
         })
         .then((locations) => {
           // console.log(locations);
-          this.$store.dispatch("setBookAvailable", true);
+          this.navigation.forEach(nav => {
+            nav.pagelist = []
+          })
+          locations.forEach(item => {
+            let loc = item.match(/\[(.*)\]!/)
+            if(loc) {
+              loc = loc[1]
+            }
+            this.navigation.forEach(nav => {
+              if (nav.href) {
+                const href = nav.href.match(/^(.*)\.html$/)
+                if (href) {
+                  if (href[1] === loc) {
+                    nav.pagelist.push(item)
+                  }
+                }
+              }
+            })
+            let currentPage = 1
+            this.navigation.forEach((nav, index) => {
+              if (index === 0) {
+                nav.page = 1
+              } else {
+                nav.page = currentPage
+              }
+              currentPage += nav.pagelist.length + 1
+            })
+          })
+          this.$store.dispatch('setPagelist',locations)
+          this.$store.dispatch("setBookAvailable", true)
           this.refreshLocation();
         });
     },
   },
   mounted() {
-    this.$store
-      .dispatch("setFileName", this.$route.params.filename.split("|").join("/"))
-      .then(() => {
-        this.initEpub();
-      });
+    const books = this.$route.params.filename.split("|");
+    const fileName = books[1];
+    getLocalForage(fileName, (err, blob) => {
+      if (!err && blob) {
+        // console.log("找到离线缓存电子书");
+        this.$store.dispatch("setFileName", books.join("/")).then(() => {
+          this.initEpub(blob);
+        });
+      } else {
+        // console.log("在线下载电子书");
+        this.$store.dispatch("setFileName", books.join("/")).then(() => {
+          // 获取epub文件的url
+          let url =
+            `${process.env.VUE_APP_EPUB_URL}/` + this.filename + ".epub";
+          this.initEpub(url);
+        });
+      }
+    });
   },
 };
 </script>

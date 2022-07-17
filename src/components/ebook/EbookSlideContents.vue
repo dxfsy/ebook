@@ -29,8 +29,16 @@
         <img :src="cover" class="slide-contents-book-img" />
       </div>
       <div class="slide-contents-book-info-wrapper">
-        <div class="slide-contents-book-title">{{ metadata.title }}</div>
-        <div class="slide-contents-book-author">{{ metadata.creator }}</div>
+        <div class="slide-contents-book-title">
+          <span class="slide-contents-book-title-text">{{
+            metadata.title
+          }}</span>
+        </div>
+        <div class="slide-contents-book-author">
+          <span class="slide-contents-book-author-text">{{
+            metadata.creator
+          }}</span>
+        </div>
       </div>
       <div class="slide-contens-book-progress-wrapper">
         <div class="slide-contents-book-progress">
@@ -75,11 +83,10 @@
         class="slide-search-item"
         v-for="(item, index) in searchList"
         :key="index"
-        v-html ="item.excerpt"
+        v-html="item.excerpt"
         v-show="searchList"
-        @click="displayContent(item.cfi,true)"
-      >
-      </div>
+        @click="displayContent(item.cfi, true)"
+      ></div>
       <div class="slide-search-item" v-show="!searchList">
         搜索内容为空 或 未进行搜索
       </div>
@@ -133,10 +140,10 @@ export default {
       };
     },
     // 点击跳转到对应页面进行展示
-    displayContent(target,highlight = false) {
+    displayContent(target, highlight = false) {
       this.display(target, () => {
         this.toggleMenu();
-        if(highlight) {
+        if (highlight) {
           // 高亮显示api
           this.currentBook.rendition.annotations.highlight(target);
         }
@@ -149,11 +156,14 @@ export default {
       if (trimSearchText && trimSearchText.length > 0) {
         this.doSearch(trimSearchText).then((list) => {
           this.searchList = list;
-          this.searchList.map(item=> {
-            item.excerpt = item.excerpt.replace(trimSearchText,`<span class="content-search-text">
-            ${trimSearchText}</span>`)
+          this.searchList.map((item) => {
+            item.excerpt = item.excerpt.replace(
+              trimSearchText,
+              `<span class="content-search-text">
+            ${trimSearchText}</span>`
+            );
             return item;
-          })
+          });
         });
       }
     },
@@ -219,19 +229,26 @@ export default {
       .slide-contents-book-title {
         // 计算中间部分实际的宽度（精确宽度）
         // 375*0.85-30-20-45-70 = 153.75
-        width: px2rem(153.75);
+        // width: px2rem(153.75);
         font-size: px2rem(14);
         line-height: px2rem(16);
         margin-bottom: px2rem(5);
-        // 这里的文字省略需要有宽度才能有效果
+        @include left;
+        .slide-contents-book-title-text {
+          // 这里的文字省略需要有宽度才能有效果
 
-        // 这里实现多行文字省略（超出指定多行就省略文字）
-        @include mutilEllipsis(2);
+          // 这里实现多行文字省略（超出指定多行就省略文字）
+
+          @include mutilEllipsis(2);
+        }
       }
       .slide-contents-book-author {
-        width: px2rem(153.75);
+        // width: px2rem(153.75);
         font-size: px2rem(12);
-        @include Ellipsis;
+        @include left;
+        .slide-contents-book-author-text {
+          @include Ellipsis;
+        }
       }
     }
     .slide-contens-book-progress-wrapper {

@@ -74,7 +74,7 @@ export default {
   methods: {
     addBookmark(){
         this.bookmark = getBookmark(this.filename);
-        console.log(this.bookmark);
+        // console.log(this.bookmark);
         if(!this.bookmark) {
             this.bookmark = []
         }

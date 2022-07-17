@@ -4,6 +4,9 @@ import router from './router'
 import store from './store'
 import i18n from '@/lang'
 import '@/assets/styles/icon.css'
+// import './mock';
+import './utils/boost';
+import './utils/create-api';
 Vue.config.productionTip = false
 
 new Vue({
