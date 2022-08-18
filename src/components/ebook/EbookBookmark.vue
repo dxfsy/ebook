@@ -138,7 +138,7 @@ export default {
       this.$refs.bookmark.style.top = `${-v}px`;
       this.beforeHeight();
       const bookmarkDown = this.$refs.bookmarkDown;
-      if ((bookmarkDown.style.transform = "rotate(180deg)")) {
+      if ((bookmarkDown.style.transform === "rotate(180deg)")) {
         bookmarkDown.style.transform = "rotate(0deg)";
       }
     },

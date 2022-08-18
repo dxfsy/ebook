@@ -75,6 +75,7 @@ export default {
   mounted() {
     home().then((res) => {
       if (res && res.status === 200) {
+        console.log(res);
         const data = res.data;
         const randomIndex = Math.floor(Math.random() * data.random.length);
         this.random = data.random[randomIndex];

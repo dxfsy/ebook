@@ -34,6 +34,9 @@ const routes = [
       {
         path:'home',
         component:()=> import ('@/pages/store/StoreHome'),
+        meta: {
+          keepAlive:true
+        }
       },
       {
         path:'list',

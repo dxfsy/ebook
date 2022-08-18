@@ -7,7 +7,15 @@ import '@/assets/styles/icon.css'
 // import './mock';
 import './utils/boost';
 import './utils/create-api';
+import VueLazyload from 'vue-lazyload'
 Vue.config.productionTip = false
+
+// 配置项
+Vue.use(VueLazyload, {
+  preLoad: 1,
+  // loading: 'dist/loading.gif',
+  attempt: 1
+})
 
 new Vue({
   router,
